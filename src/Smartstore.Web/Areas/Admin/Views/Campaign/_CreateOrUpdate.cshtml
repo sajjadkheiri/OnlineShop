@@ -1,0 +1,88 @@
+﻿@using Smartstore.Admin.Models.Messages
+
+@model CampaignModel
+
+<div asp-validation-summary="All"></div>
+<input asp-for="Id" type="hidden" />
+
+<div sm-if="Model.Id > 0" class="alert alert-warning">
+    @T("Admin.Promotions.Campaigns.Warning")
+</div>
+
+<tabstrip id="campaign-edit" sm-nav-style="Material" sm-nav-position="Top">
+    <tab sm-title="@T("Admin.Common.General")" sm-selected="true">
+        <div class="adminContent">
+            <div class="adminRow">
+                <div class="adminTitle">
+                    <smart-label asp-for="Name"/>
+                </div>
+                <div class="adminData">
+                    <input asp-for="Name" />
+                    <span asp-validation-for="Name"></span>
+                </div>
+            </div>
+            <div class="adminRow">
+                <div class="adminTitle">
+                    <smart-label asp-for="Subject"/>
+                </div>
+                <div class="adminData">
+                    @if (!Model.Subject.HasValue())
+                    {
+                        <ai-suggestion asp-for="Subject" entity-type="Campaign" mandatory-entity-fields="Body,Name">
+                            <input asp-for="Subject" />
+                        </ai-suggestion>
+                    }
+                    else
+                    {
+                        <ai-text asp-for="Subject"
+                                 entity-name="@Model.Name"
+                                 entity-type="Campaign"
+                                 word-count="50">
+                            <input asp-for="Subject" />
+                        </ai-text>
+                    }
+                    <span asp-validation-for="Subject"></span>
+                </div>
+            </div>
+            <div class="adminRow">
+                <div class="adminTitle">
+                    <smart-label asp-for="SelectedStoreIds"/>
+                </div>
+                <div class="adminData">
+                    <editor asp-for="SelectedStoreIds" />
+                    <span asp-validation-for="SelectedStoreIds"></span>
+                </div>
+            </div>
+            <div class="adminRow">
+                <div class="adminTitle">
+                    <smart-label asp-for="SelectedCustomerRoleIds"/>
+                </div>
+                <div class="adminData">
+                    <editor asp-for="SelectedCustomerRoleIds" />
+                    <span asp-validation-for="SelectedCustomerRoleIds"></span>
+                </div>
+            </div>
+            <div class="adminRow">
+                <div class="adminTitle">
+                    <smart-label asp-for="LastModelTree"/>
+                </div>
+                <div class="adminData">
+                    <editor asp-for="LastModelTree" />
+                </div>
+            </div>
+            <div class="adminRow">
+                <div class="adminTitle">
+                    <smart-label asp-for="Body"/>
+                </div>
+                <div class="adminData wide">
+                    <ai-rich-text asp-for="Body"
+                                  entity-name="@Model.Subject"
+                                  entity-type="Campaign">
+                        <editor asp-for="Body" />
+                    </ai-rich-text>
+                    <span asp-validation-for="Body"></span>
+                </div>
+            </div>
+        </div>
+    </tab>
+</tabstrip>

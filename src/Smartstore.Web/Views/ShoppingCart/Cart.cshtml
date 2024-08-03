@@ -1,0 +1,28 @@
+﻿@using Smartstore.Web.Models.Cart
+
+@model ShoppingCartModel
+
+@{
+    Layout = "_Checkout";
+    Assets.BodyAttributes.AppendCssClass("order-summary-page no-offcanvas-cart content-overflow-initial");
+    Assets.AppendTitleParts(T("PageTitle.ShoppingCart").Value);
+    Assets.AddMetaRobots();
+
+    var cartItemSelectionLink = ViewBag.CartItemSelectionLink as string;
+}
+
+<widget target-zone="order_progress">
+    @await Component.InvokeAsync("CheckoutProgress", new { action = nameof(ShoppingCartController.Cart), controller = "ShoppingCart" })
+</widget>
+
+<div class="page shopping-cart-page">
+    <div class="page-title">
+        <h1 class="h3 mb-0">@T("ShoppingCart")</h1>
+        <div sm-if="cartItemSelectionLink.HasValue()" id="SelectAllCartItems" class="mt-1">
+            @Html.Raw(cartItemSelectionLink)
+        </div>
+    </div>
+    <div class="page-body">
+        @await Component.InvokeAsync("OrderSummary", new { model = Model })
+    </div>
+</div>

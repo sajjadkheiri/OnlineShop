@@ -1,0 +1,17 @@
+﻿@using Smartstore.Utilities
+
+@{
+    var invariant = GetMetadata<bool>("invariant");
+    var attributes = new AttributeDictionary().Merge(ConvertUtility.ObjectToDictionary(ViewData["htmlAttributes"] ?? new object()));
+    attributes.Merge("placeholder", GetMetadata<string>("placeholder") ?? T("Common.Empty").Value);
+}
+
+<input type="number"
+       asp-for="@Model"
+       attrs="attributes"
+       sm-decimals="@(GetMetadata<uint?>("decimals") ?? 0)"
+       sm-postfix="@(GetMetadata<string>("postfix"))"
+       min="@(GetMetadata<int?>("min"))"
+       max="@(GetMetadata<int?>("max"))"
+       step="@(GetMetadata<int?>("step") ?? 1)"
+       attr-data-invariant='(invariant, "true")' />

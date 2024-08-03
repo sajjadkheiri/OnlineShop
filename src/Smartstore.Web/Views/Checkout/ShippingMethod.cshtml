@@ -1,0 +1,53 @@
+﻿@using Smartstore.Web.Models.Checkout
+
+@model CheckoutShippingMethodModel
+
+@{
+    Layout = "_Checkout";
+    Assets.AppendTitleParts(T("PageTitle.Checkout.ShippingMethod"));
+    Assets.BodyAttributes.AppendCssClass("no-offcanvas-cart content-overflow-initial");
+    Assets.AddMetaRobots();
+}
+
+<widget target-zone="order_progress">
+    @await Component.InvokeAsync("CheckoutProgress", new { action = Model.ActionName })
+</widget>
+
+<div class="page shipping-method-page">
+    <div class="page-title">
+        <h1 class="h3">@T("Checkout.SelectShippingMethod")</h1>
+    </div>
+    <div class="page-body checkout-data">
+        <form asp-action="ShippingMethod" asp-controller="Checkout" method="post">
+            <zone name="checkout_shipping_method_top" />
+
+            <div class="order-summary-content">
+                <div class="row cart-container">
+                    <div class="col-lg-7 col-xl-8">
+                        <partial name="ShippingMethodList" />
+                    </div>
+                    <div class="col-lg-5 col-xl-4">
+                        <partial name="CheckoutOrderTotals" />
+                    </div>
+                </div>
+            </div>
+
+            <zone name="checkout_shipping_method_bottom" />
+        </form>
+    </div>
+</div>
+
+<script sm-target-zone="scripts" data-origin="shipping-method">
+    $(function () {
+        $('.checkout-data .opt-radio').on('change', function (e) {
+            $('.checkout-data .opt-list-item').removeClass('active');
+            var item = $(this).closest('.opt-list-item');
+            item.addClass("active");
+        });
+
+        $('.shipping-method-next-step-button').on('click', function () {
+            $('#nextstep').trigger('click');
+            return false;
+        });
+    });
+</script>

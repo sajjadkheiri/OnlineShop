@@ -1,0 +1,16 @@
+﻿@using Smartstore.Web.Models.Checkout;
+@using Smartstore.Core.Widgets;
+ 
+@model CheckoutAddressModel
+
+@{
+    Layout = "_Checkout";
+
+    Assets.AppendTitleParts(T("PageTitle.Checkout"));
+}
+
+<widget target-zone="order_progress">
+    @await Component.InvokeAsync("CheckoutProgress", new { action = "BillingAddress" })
+</widget>
+
+<h1>Hello world!</h1>

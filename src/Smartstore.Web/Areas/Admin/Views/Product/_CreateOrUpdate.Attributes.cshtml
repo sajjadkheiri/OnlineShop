@@ -1,0 +1,79 @@
+﻿@model ProductModel
+
+@{
+    var gridViewData = new ViewDataDictionary(this.ViewData);
+    gridViewData["Parent"] = Model;
+}
+
+<div>
+    <h5 class="mb-3 text-muted">@T("Admin.Catalog.Products.ProductVariantAttributes.Attributes")</h5>
+
+    @if (Model.Id > 0)
+    {
+        if (Model.NumberOfAvailableProductAttributes > 0)
+        {
+            <partial name="Grids/_Grid.ProductVariantAttribute" model="null" view-data="gridViewData" />
+        }
+        else
+        {
+            <div class="alert alert-danger">
+                @T("Admin.Catalog.Products.ProductVariantAttributes.NoAttributesAvailable")
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-danger">
+            @T("Admin.Catalog.Products.ProductVariantAttributes.SaveBeforeEdit")
+        </div>
+    }
+</div>
+
+<div class="mt-5">
+    <h5 class="mb-3 text-muted">@T("Admin.Catalog.Products.ProductVariantAttributes.AttributeCombinations")</h5>
+
+    @if (Model.Id > 0)
+    {
+        if (Model.NumberOfAvailableProductAttributes > 0)
+        {
+            <div class="alert alert-info mb-3">
+                @T("Admin.Catalog.Products.ProductVariantAttributes.AttributeCombinations.Description")
+            </div>
+
+            <div class="adminContent">
+                <div class="adminRow">
+                    <div class="adminTitle">
+                        <smart-label asp-for="AttributeChoiceBehaviour" />
+                    </div>
+                    <div class="adminData">
+                        <editor asp-for="AttributeChoiceBehaviour" />
+                        <span asp-validation-for="AttributeChoiceBehaviour"></span>
+                    </div>
+                </div>
+                <div class="adminRow">
+                    <div class="adminTitle">
+                        <smart-label asp-for="AttributeCombinationRequired" />
+                    </div>
+                    <div class="adminData">
+                        <input asp-for="AttributeCombinationRequired" />
+                        <span asp-validation-for="AttributeCombinationRequired"></span>
+                    </div>
+                </div>
+            </div>
+
+            <partial name="Grids/_Grid.AttributeCombinations" model="null" view-data="gridViewData" />
+        }
+        else
+        {
+            <div class="alert alert-danger">
+                @T("Admin.Catalog.Products.ProductVariantAttributes.NoAttributesAvailable")
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-danger">
+            @T("Admin.Catalog.Products.ProductVariantAttributes.SaveBeforeEdit")
+        </div>
+    }
+</div>

@@ -1,0 +1,85 @@
+﻿@model IRuleExpressionGroup
+
+@{
+    var scope = Model.Provider.Scope;
+    var ruleDescriptors = await Model.Provider.GetRuleDescriptorsAsync();
+    var orButton = await GetConditionsButtonString(LogicalRuleOperator.Or);
+    var andButton = await GetConditionsButtonString(LogicalRuleOperator.And);
+    string oneCondition;
+    string allCondition;
+
+    if (!Model.IsSubGroup && scope == RuleScope.ProductAttribute)
+    {
+        oneCondition = T("Admin.Rules.ProductAttribute.OneCondition", orButton);
+        allCondition = T("Admin.Rules.ProductAttribute.AllConditions", andButton);
+    }
+    else
+    {
+        oneCondition = T("Admin.Rules.OneCondition", orButton);
+        allCondition = T("Admin.Rules.AllConditions", andButton);
+    }
+
+    async Task<string> GetConditionsButtonString(LogicalRuleOperator op)
+    {
+        // INFO: "cshtml" extension is mandatory here, as this partial is invoked with a complete path in case of RuleScope.ProductAttribute.
+        var content = await Html.PartialAsync("_RuleSetConditionsButton.cshtml", Model, new ViewDataDictionary(ViewData) { ["ruleOperator"] = op });
+        return content.ToHtmlString().ToString();
+    }
+}
+
+<div class="ruleset" data-ruleset-id="@Model.Id" data-refrule-id="@Model.RefRuleId">
+    <div class="ruleset-header hstack justify-content-between">
+        <div class="ruleset-operator">
+            <input type="hidden" asp-for="LogicalOperator" />
+            <div class="ruleset-op-one align-items-center justify-content-stretch @(Model.LogicalOperator == LogicalRuleOperator.And ? "hide" : "d-flex")">
+                @Html.Raw(oneCondition)
+            </div>
+            <div class="ruleset-op-all align-items-center justify-content-stretch @(Model.LogicalOperator == LogicalRuleOperator.And ? "d-flex" : "hide")">
+                @Html.Raw(allCondition)
+            </div>
+        </div>
+        <div sm-if="Model.RefRuleId == 0" class="d-flex align-items-center">
+            <button type="button" class="btn btn-light btn-icon ruleset-save" title="@T("Admin.Rules.SaveConditions")" disabled>
+                <i class="fa fa-save"></i>
+            </button>
+        </div>
+    </div>
+    <div class="ruleset-body">
+        @foreach (var expression in Model.Expressions)
+        {
+            <partial name="@(expression is IRuleExpressionGroup ? "_RuleSet.cshtml" : "_Rule.cshtml")" model="expression" />
+        }
+    </div>
+    <div class="ruleset-footer">
+        <div class="row xs-gutters x-mt-3">
+            <div class="col-4 col-md-3 col-xl-2">
+                <select class="form-control r-add-rule">
+                    <option>@T("Admin.Rules.AddCondition")</option>
+                    @foreach (var grp in ruleDescriptors.GroupBy(x => x.GroupKey))
+                    {
+                        if (grp.Key.HasValue())
+                        {
+                            @:<optgroup label="@T(grp.Key)">
+                        }
+                        foreach (var d in grp)
+                        {
+                            <option value="@d.Name">@(d.DisplayName.NullEmpty() ?? d.Name)</option>
+                        }
+                        if (grp.Key.HasValue())
+                        {
+                            @:</optgroup>
+                        }
+                    }
+                </select>
+            </div>
+            <div sm-if="scope != RuleScope.Product" class="col-8 col-md-9 col-xl-10">
+                <button type="button" class="btn btn-outline-secondary btn-to-primary r-add-group">
+                    <span>@T("Admin.Rules.AddGroup")</span>
+                </button>
+                <button sm-if="Model.IsSubGroup" type="button" class="btn btn-outline-secondary btn-to-danger r-delete-group float-right">
+                    <span>@T("Admin.Rules.DeleteGroup")</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

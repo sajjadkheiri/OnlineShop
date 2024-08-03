@@ -1,0 +1,30 @@
+﻿@using Smartstore.Core.Catalog
+@using Smartstore.Web.Models.Catalog
+
+@inject CatalogSettings _catalogSettings
+
+@model ProductSummaryItemModel
+
+<div class="art-brand">
+    @if (Model.Brand != null)
+    {
+        var image = Model.Brand.Image;
+        if (image?.File != null && Model.Parent.ViewMode == ProductSummaryViewMode.List)
+        {
+            if (_catalogSettings.LinkManufacturerLogoInLists)
+            {
+                <a asp-route="Manufacturer" asp-route-SeName="@Model.Brand.SeName" title="@image.Title">
+                    <img sm-model="image" class="art-brand-picture" />
+                </a>
+            }
+            else
+            {
+                <img sm-model="image" class="art-brand-picture" />
+            }
+        }
+        else
+        {
+            <span sm-language-attributes-for="Model.Brand.Name">@Model.Brand.Name</span>
+        }
+    }
+</div>

@@ -1,0 +1,24 @@
+﻿/// <reference path="../../../Smartstore.Web/wwwroot/shared/references.scss" />
+
+@mixin widget-zone-preview() {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    border: 2px dotted rgba(var(--badge-ring-color-rgb), 0.2);
+    margin-block: 3px;
+    text-align: start;
+    box-shadow: none !important;
+
+    > .btn-clipboard {
+        position: absolute;
+        inset-inline-end: 0;
+        opacity: 0;
+        font-size: $font-size-base;
+        background-color: var(--badge-bg);
+    }
+
+    &:hover > .btn-clipboard {
+        opacity: 1;
+    }
+}

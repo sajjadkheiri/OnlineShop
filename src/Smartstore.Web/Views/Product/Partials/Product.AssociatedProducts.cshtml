@@ -1,0 +1,57 @@
+﻿@using Smartstore.Core.Catalog
+@using Smartstore.Web.Models.Catalog
+
+@model GroupedProductModel
+
+@inject CatalogSettings CatalogSettings
+
+@{
+    ViewDataDictionary CreateViewData(ProductDetailsModel model, bool skipUpdateUrl = false)
+    {
+        var vd = new ViewDataDictionary(ViewData);
+        vd.TemplateInfo.HtmlFieldPrefix = $"product_{model.Id}";
+        vd["GroupedProductConfiguration"] = Model.Configuration;
+        vd["SkipUpdateUrl"] = skipUpdateUrl;
+        return vd;
+    }
+}
+
+<div id="associated-products">
+    @if (Model.Configuration.Collapsible ?? CatalogSettings.CollapsibleAssociatedProducts)
+    {
+        <div class="pd-assoc-list accordion">
+            @foreach (var product in Model.Products)
+            {
+                var id = $"associated-product{product.Id}";
+                var viewData = CreateViewData(product, true);
+
+                <div class="pd-assoc update-container" data-url="@product.UpdateUrl">
+                    <div class="pd-assoc-header collapsed" data-target="#@id" aria-expanded="false" data-partial="AssociatedHeader">
+                        <partial name="Product.AssociatedProduct.Header" model="product" view-data="viewData" />
+                    </div>
+                    <div id="@id" class="collapse" data-parent="#associated-products">
+                        <div class="pd-assoc-body py-3">
+                            <partial name="Product.AssociatedProduct" model="product" view-data="viewData" />
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        @foreach (var product in Model.Products)
+        {
+            <hr />
+            <partial name="Product.AssociatedProduct" model="product" view-data="CreateViewData(product)" />
+        }
+    }
+
+    @if (Model.Products.TotalPages > 1)
+    {
+        <pagination sm-list-items="Model.Products" class="mt-2"
+                    sm-alignment="Left"
+                    sm-url="@Url.Action("AssociatedProducts", "Product", new { id = Model.Id })"
+                    sm-content-target="#associated-products" />
+    }
+</div>

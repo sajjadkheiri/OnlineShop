@@ -1,0 +1,40 @@
+﻿@using Smartstore.Web.Models.Checkout
+
+@model CheckoutConfirmModel
+
+@{
+    Layout = "_Checkout";
+    Assets.AppendTitleParts(T("PageTitle.Checkout.Confirm"));
+    Assets.BodyAttributes.AppendCssClass("no-offcanvas-cart content-overflow-initial");
+    Assets.AddMetaRobots();
+}
+
+<widget target-zone="order_progress">
+    @await Component.InvokeAsync("CheckoutProgress", new { action = Model.ActionName })
+</widget>
+
+<div class="page checkout-confirm-page">
+    <div class="page-title">
+        <h1 class="h3">@T("Checkout.ConfirmYourOrder")</h1>
+    </div>
+    <div class="page-body checkout-data">
+        <form asp-action="Confirm" id="confirm-order-form" method="post">
+            <zone name="checkout_confirm_top" />
+
+            <div class="order-summary-content">
+                <div class="row cart-container">
+                    <div class="col-lg-7 col-xl-8">
+                        <partial name="Terminal.ConfirmDetails" />
+                    </div>
+                    <div class="col-lg-5 col-xl-4">
+                        <partial name="CheckoutOrderTotals" />
+                    </div>
+                </div>
+            </div>
+
+            <zone name="checkout_confirm_bottom" />
+        </form>
+    </div>
+</div>
+
+<partial name="ConfirmScript" />

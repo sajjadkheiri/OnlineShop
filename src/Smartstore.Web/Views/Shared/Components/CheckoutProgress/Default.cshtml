@@ -1,0 +1,25 @@
+﻿@using Smartstore.Web.Models.Checkout
+
+@model List<CheckoutProgressStepModel>
+
+@{
+    // 2:16.6% 3:25% 4:33.3%
+    var cols = Model.Count == 4 ? 3 : (Model.Count >= 5 ? 2 : 4);
+}
+
+<zone name="checkout_steps_before" />
+
+<div class="costeps row g-0 mx-auto">
+    @foreach (var step in Model)
+    {
+        <div class="costep col-@cols @step.StateClass" data-step="@step.Name">
+            <a class="costep-link@(step.Visited || step.Active ? string.Empty : " disabled")"
+                href="@(step.Visited || step.Active ? step.Url : "javascript:;")">
+                <i class="costep-icon"></i>
+                <span class="costep-label">@step.Label</span>
+            </a>
+        </div>
+    }
+</div>
+
+<zone name="checkout_steps_after" />

@@ -1,0 +1,120 @@
+/// <reference path="references.scss" />
+
+// Common
+// ------------------------------
+
+.custom-scrollbar {
+    --overflow-x: hidden;
+    --overflow-y: auto;
+    --scrollbar-size: 18px;
+    --scrollbar-track-color: rgba(0,0,0, 0);
+    --scrollbar-track-hover-color: rgba(0,0,0, 0.025);
+    --scrollbar-thumb-color: rgba(0,0,0, 0.3);
+    --scrollbar-thumb-hover-color: rgba(0,0,0, 0.5);
+    --scrollbar-thumb-active-color: rgba(0,0,0, 0.6);
+    overflow-x: var(--overflow-x, hidden) !important;
+    overflow-y: var(--overflow-y, auto) !important;
+
+    // For Firefox
+    .moz & {
+        scrollbar-width: thin;
+    }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
+}
+
+.custom-scrollbar::-webkit-scrollbar:disabled {
+    display: none;
+}
+
+
+
+// Track
+// ------------------------------
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background-clip: padding-box;
+    background-color: var(--scrollbar-track-color);
+    margin-block: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track:horizontal {
+}
+
+.custom-scrollbar::-webkit-scrollbar-track:hover {
+    background-color: var(--scrollbar-track-hover-color);
+    -webkit-box-shadow: inset 1px 0 0 rgba($black, .075);
+    transition: all 0.5s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track:horizontal:hover {
+    -webkit-box-shadow: inset 0 1px 0 rgba($black, .075);
+}
+
+.custom-scrollbar::-webkit-scrollbar-track:active {
+    background-color: var(--scrollbar-track-hover-color);
+}
+
+.custom-scrollbar::-webkit-scrollbar-track-piece {
+}
+
+
+// Thumb
+// ------------------------------
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb-color);
+    background-clip: padding-box;
+    border-radius: 50em;
+    border: 4px solid transparent;
+    min-height: 36px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover-color);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:active {
+    background-color: var(--scrollbar-thumb-active-color);
+}
+
+.custom-scrollbar::-webkit-scrollbar-button,
+.custom-scrollbar::-webkit-scrollbar-corner {
+    cursor: pointer;
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-button {
+    width: 0;
+    height: 0;
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+}
+
+
+// Overlaying scrollbar
+// ------------------------------
+
+// INFO: Does not work anymore!
+//.wkit .custom-scrollbar.custom-scrollbar-overlay {
+//    --overflow-x: overlay;
+//    --overflow-y: overlay;
+//}
+
+.custom-scrollbar.custom-scrollbar-overlay::-webkit-scrollbar {
+    visibility: hidden;
+}
+.custom-scrollbar.custom-scrollbar-overlay:hover::-webkit-scrollbar {
+    visibility: visible;
+}
+
+.custom-scrollbar.custom-scrollbar-overlay::-webkit-scrollbar-thumb,
+.custom-scrollbar.custom-scrollbar-overlay::-webkit-scrollbar-track {
+    display: none;
+}
+.custom-scrollbar.custom-scrollbar-overlay:hover::-webkit-scrollbar-thumb,
+.custom-scrollbar.custom-scrollbar-overlay:hover::-webkit-scrollbar-track {
+    display: block;
+}

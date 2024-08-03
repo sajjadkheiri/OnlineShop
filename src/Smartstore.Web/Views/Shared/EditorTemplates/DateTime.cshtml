@@ -1,0 +1,48 @@
+﻿@using Smartstore.Utilities
+@using System.Globalization
+
+@{
+    if (!TryGetMetadata<bool>("pickTime", out var picktime))
+    {
+        if (TryGetMetadata<List<string>>("pickTimeFieldIds", out var fieldIds))
+        {
+            picktime = fieldIds.Contains(ViewData.TemplateInfo.GetFullHtmlFieldName(string.Empty));
+        }
+    }
+
+    DateTime? value = ViewData.Model != null
+        ? Convert.ToDateTime(ViewData.Model, CultureInfo.CurrentCulture).ToLocalTime()
+        : null;
+
+    var valueStr = value.HasValue && value.Value > DateTime.MinValue
+        ? picktime ? value.Value.ToString() : value.Value.ToShortDateString()
+        : string.Empty;
+
+    var cssClass = "input-group date datetimepicker-group flex-nowrap";
+    if (TryGetMetadata<string>("size", out var size))
+    {
+        cssClass += " input-group-" + size;
+    }
+
+    var id = Html.IdForModel();
+    var format = picktime ? "L LT" : "L";
+    var attributes = new AttributeDictionary().Merge(ConvertUtility.ObjectToDictionary(ViewData["htmlAttributes"] ?? new object()));
+}
+
+<div class="@cssClass" id="@id-parent" data-date="@valueStr" data-target-input="nearest" data-keep-open="false">
+    <input asp-for="@Model"
+           attrs="attributes"
+           class="datetimepicker-input edit-control"
+           data-target="#@(id)-parent"
+           data-format="@format"
+           data-use-current="false"
+           data-editor="date-time"
+           type="text"
+           attr-value="(valueStr.HasValue(), valueStr)" />
+
+    <div class="input-group-append" data-target="#@(id)-parent" data-toggle="datetimepicker">
+        <button type="button" class="btn btn-light">
+            <i class="far fa-calendar"></i>
+        </button>
+    </div>
+</div>

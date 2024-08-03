@@ -1,0 +1,48 @@
+﻿@using Smartstore.Web.Models.Catalog
+
+@model ProductReviewOverviewModel
+
+@{
+    if (!Model.AllowCustomerReviews)
+    {
+        return;
+    }
+
+    int ratingPercent = 0;
+    if (Model.TotalReviews != 0)
+    {
+        ratingPercent = ((Model.RatingSum * 100) / Model.TotalReviews) / 5;
+    }
+
+    var reviewPageUrl = Url.Action("Reviews", new { id = Model.ProductId });
+}
+
+<div class="pd-review-summary pd-group" @Html.Raw(Model.TotalReviews > 0 ? " itemprop='aggregateRating' itemscope itemtype='http://schema.org/AggregateRating'" : "")>
+    @* STARS *@
+    <div class="pd-rating-box">
+        <div class="rating">
+            <div style="width: @(ratingPercent)%"></div>
+        </div>
+        <span sm-if="Model.TotalReviews > 0" class="pd-review-count">(<a href="@reviewPageUrl">@Model.TotalReviews</a>)</span>
+    </div>
+
+    @* TEXT *@
+    <div class="pd-review-link link-dnu">
+        @if (Model.TotalReviews > 0)
+        {
+            <a href="@reviewPageUrl" class="link-dnu">@T("Reviews.Overview.AddNew")</a>
+            @* Hidden microdata info *@
+            decimal ratingValue = ratingPercent / (decimal)20;
+            <meta itemprop="ratingValue" content='@ratingValue.ToString("0.0", CultureInfo.GetCultureInfo("en-US"))' />
+            <meta itemprop="reviewCount" content='@Model.TotalReviews' />
+            <meta itemprop="ratingCount" content='@Model.TotalReviews' />
+        }
+        else
+        {
+            <a href="@reviewPageUrl" class="link-dnu">@T("Reviews.Overview.First")</a>
+        }
+    </div>
+    <div sm-if="Model.Reward != null" class="pd-review-amount alert alert-success mt-1 fs-sm py-2 w-100">
+        @Html.Raw(T("RewardPoints.Message.RewardPointsForProductReview", Model.Reward.Points, Model.Reward.Amount.ToString()))
+    </div>
+</div>

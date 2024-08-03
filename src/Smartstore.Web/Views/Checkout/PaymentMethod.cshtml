@@ -1,0 +1,143 @@
+﻿@using Smartstore.Web.Models.Checkout
+
+@model CheckoutPaymentMethodModel
+
+@{
+    Layout = "_Checkout";
+    Assets.AppendTitleParts(T("PageTitle.Checkout.PaymentMethod"));
+    Assets.BodyAttributes.AppendCssClass("no-offcanvas-cart content-overflow-initial");
+    Assets.AddMetaRobots();
+}
+
+<widget target-zone="order_progress">
+    @await Component.InvokeAsync("CheckoutProgress", new { action = Model.ActionName })
+</widget>
+
+<div class="page payment-method-page">
+    <div class="page-title">
+        <h1 class="h3">@T("Checkout.SelectPaymentMethod")</h1>
+    </div>
+    <div class="page-body checkout-data">
+        <form asp-action="PaymentMethod" asp-controller="Checkout" method="post">
+            <zone name="checkout_payment_method_top" />
+
+            <div class="order-summary-content">
+                <div class="row cart-container">
+                    <div class="col-lg-7 col-xl-8">
+                        <partial name="PaymentMethodList" />
+                    </div>
+                    <div class="col-lg-5 col-xl-4">
+                        <partial name="CheckoutOrderTotals" />
+                    </div>
+                </div>
+            </div>
+
+            <zone name="checkout_payment_method_bottom" />
+        </form>
+    </div>
+</div>
+
+<script sm-target-zone="scripts" data-origin="payment-method">
+    $(function () {
+        var validationSummary = $('#payment-info-validation-summary');
+
+        if (validationSummary.length) {
+            $.scrollTo(validationSummary, 600, { offset: -100 });
+        }
+
+        $('.payment-method-next-step-button').on('click', function () {
+            $('#nextstep').trigger('click');
+            return false;
+        });
+
+        @if (Model.DisplayPaymentMethodIcons)
+        {
+            <text>
+                $(".payment-method-item").on('click', function (e) {
+                    var item = $(this);
+                    if (!item.hasClass('active')) {
+                        var label = item.find("label");
+
+                        // Prevent recursive calls.
+                        if (!label.hasClass('clicked')) {
+                            label.addClass('clicked');
+                            label.trigger('click');
+                        }
+                    }
+                });
+
+                $(".payment-method-item .form-check-label").on('click', function (e) {
+                    e.stopPropagation();
+                    var label = $(this);
+                    label.removeClass('clicked');
+                });
+            </text>
+        }
+
+        $('.checkout-data .opt-radio').on('change', function (e) {
+            var radio = $(this);
+            var systemName = radio.val();
+
+            function removeInfoPanels() {
+                $('.checkout-data .opt-info').each(function (i, val) {
+                    var el = $(val);
+                    if (el.data('system-name') != systemName && el.data('lazy-info')) {
+                        el.remove();
+                    }
+                });
+            }
+
+            function disableNextStepButton(disable) {
+                var btn = $('button.payment-method-next-step-button');
+                btn.prop('disabled', disable);
+                btn.find('.fa')
+                    .removeClass('fa-angle-right fa-spinner fa-spin')
+                    .addClass(disable ? 'fa-spinner fa-spin' : 'fa-angle-right');
+            };
+
+            $('.checkout-data .opt-list-item').removeClass('active');
+
+            var item = radio.closest('.opt-list-item');
+            item.addClass("active");
+
+            if (!radio.data("has-info") || !radio.data("lazy-info")) {
+                removeInfoPanels();
+                return;
+            }
+
+            disableNextStepButton(true);
+
+            $.ajax({
+                type: 'POST',
+                cache: false,
+                dataType: 'html',
+                async: true,
+                url: '@Url.Action("PaymentInfoAjax")',
+                data: { paymentMethodSystemName: systemName },
+                success: function (html) {
+                    if (!html) return;
+
+                    var panel = item.find('.opt-info');
+
+                    if (panel.length == 0) {
+                        panel = $('<div class="opt-info opt-info-embedded payment-method-info"></div>')
+                            .appendTo(item)
+                            .data('system-name', systemName)
+                            .data('lazy-info', true);
+                    }
+
+                    panel.html(html);
+                    applyCommonPlugins(panel);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.error(thrownError);
+                },
+                complete: function () {
+                    disableNextStepButton(false);
+                    // Remove all other info containers.
+                    removeInfoPanels();
+                }
+            });
+        });
+    });
+</script>

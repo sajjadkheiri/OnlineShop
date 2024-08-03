@@ -1,0 +1,11 @@
+﻿/// <reference path="_core.scss" />
+
+@import '_core.scss';
+
+.wz-preview {
+    @include widget-zone-preview();
+
+    #header &, .options & {
+        display: inline-flex;
+    }
+}

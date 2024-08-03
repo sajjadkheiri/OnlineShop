@@ -1,0 +1,111 @@
+﻿@using Smartstore.Web.Models.Topics;
+
+@model TopicModel
+
+@{
+    var isPopup = ViewBag.IsPopup;
+    if (isPopup == null || isPopup == false)
+    {
+        Layout = "_Layout";
+    }
+    else
+    {
+        Layout = "_Layout.Popup";
+    }
+
+    if (!Model.IsPasswordProtected)
+    {
+        Assets.AppendTitleParts(Model.MetaTitle.NullEmpty() ?? Model.Title);
+        Assets.AppendMetaDescriptionParts(Model.MetaDescription);
+        Assets.AppendMetaKeywordsParts(Model.MetaKeywords);
+
+        if (Model.CanonicalUrl.HasValue())
+        {
+            Assets.AppendCanonicalUrlParts(Model.CanonicalUrl);
+        }
+    }
+
+    if (Model.HtmlId.HasValue())
+    {
+        Assets.RootAttributes.Merge("id", Model.HtmlId);
+    }
+
+    if (Model.BodyCssClass.HasValue())
+    {
+        Assets.BodyAttributes.AppendCssClass(Model.BodyCssClass);
+    }
+}
+
+<div id="topic-container">
+    @if (!Model.IsPasswordProtected)
+    {
+        <partial name="_Topic" model="Model" />
+        return;
+    }
+</div>
+
+<div id="password-container" class="row">
+    <form id="topic-password-form" method="post" asp-action="Authenticate">
+        <input type="hidden" asp-for="Id" />
+        <div class="col-md-6">
+            <div class="enter-password-title mb-2">
+                @T("Topic.EnterPassword")
+            </div>
+            <div>
+                <div class="input-group">
+                    <input type="password" sm-enable-visibility-toggle="false" id="password" name="password" class="form-control" autocomplete="current-password" />
+                    <div class="input-group-append">
+                        <button id="password-button" type="submit" class="btn btn-primary topic-password-button">
+                            <i class="fa fa-check"></i>
+                            <span>@T("Common.OK")</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script sm-target-zone="scripts" data-origin="topic-details">
+    $(function () {
+        _.delay(function () { $('#password').focus() }, 100);
+
+        var passwordButton = $('#password-button');
+
+        passwordButton.on('click', function () {
+            $.ajax({
+                type: 'POST',
+                cache: false,
+				url: '@Url.Action("Authenticate", "Topic")',
+                data: $('#topic-password-form').serialize(),
+                beforeSend: function () {
+                    setPasswordButtonState(true);
+                },
+                success: function (response) {
+                    if (response.success) {
+                        $('#password-container').hide();
+                        $('#topic-container').html(response.content);
+                    }
+                    else {
+                        displayNotification(response.message, 'error');
+                    }
+                },
+                complete: function () {
+                    setPasswordButtonState(false);
+                },
+                error: function (objXml) {
+                    if (objXml != null && objXml.responseText != null && objXml.responseText !== '') {
+                        console.error(objXml.responseText);
+                    }
+                }
+            });
+        });
+
+        function setPasswordButtonState(disable) {
+            passwordButton.prop('disabled', disable);
+            passwordButton.find('.fa')
+                .removeClass('fa-check fa-spinner fa-spin')
+                .addClass(disable ? 'fa-spinner fa-spin' : 'fa-check');
+        }
+    });
+</script>

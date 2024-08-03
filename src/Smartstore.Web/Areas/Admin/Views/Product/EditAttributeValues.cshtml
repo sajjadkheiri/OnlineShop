@@ -1,0 +1,59 @@
+﻿@model EditProductAttributeModel
+
+@{
+    Assets.BodyAttributes.AppendCssClass("spa-layout");
+
+    string titleTemplate = T("Admin.Catalog.Products.ProductVariantAttributes.Attributes.Values.EditAttributeDetails");
+    ViewBag.Title = titleTemplate.FormatInvariant(Model.ProductName);
+
+    var gridViewData = new ViewDataDictionary(this.ViewData);
+    gridViewData["Parent"] = Model;
+
+    var attributes = ViewBag.ProductVariantAttributes as List<ExtendedSelectListItem>;
+    var selectedAttribute = attributes.FirstOrDefault(x => x.Selected);
+}
+
+<form asp-action="EditAttributeValues" id="productvariantattribute-form">
+    <div class="section-header">
+        <div class="title">
+            <div class="btn-group mr-3" role="group">
+                <a sm-backto asp-action="Edit" asp-controller="Product" asp-route-Id="@Model.ProductId"
+                   style="margin: 0 !important;"
+                   title="@T("Admin.Catalog.Products.ProductVariantAttributes.Attributes.Values.BackToProduct")"></a>
+                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle text-truncate"
+                        style="max-width: 15vw"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="true"
+                        data-boundary="window"
+                        title="@selectedAttribute?.Text">
+                    <span class="d-none d-md-inline text-truncate">@selectedAttribute?.Text</span>
+                </button>
+                <div class="dropdown-menu">
+                    @foreach (var item in attributes)
+                    {
+                        <a href="@Url.Action("EditAttributeValues", new { productVariantAttributeId = item.Value })"
+                           style="line-height: var(--body-line-height)"
+                           class="dropdown-item@(item.Disabled ? " disabled" : string.Empty)">
+                            <span>@item.Text</span>
+                        </a>
+                    }
+                </div>
+            </div>
+            <span>@Html.Raw(titleTemplate.FormatInvariant($"<span class=\"fs-h6 text-muted\">{Model.ProductName}</span>"))</span>
+        </div>
+        <div class="options">
+            <zone name="admin_button_toolbar_before" />
+            <zone name="admin_button_toolbar_after" />
+        </div>
+    </div>
+
+    <tabstrip id="productvariantattribute-edit" sm-nav-style="Material" sm-nav-position="Top">
+        @if (Model.IsListTypeAttribute)
+        {
+            <tab sm-title="@T("Admin.Catalog.Products.ProductVariantAttributes.Attributes.Values")" sm-selected="true" sm-adaptive-height="true">
+                <partial name="Grids/_Grid.AttributeValues" model="null" view-data="gridViewData" />
+            </tab>
+        }
+    </tabstrip>
+</form>

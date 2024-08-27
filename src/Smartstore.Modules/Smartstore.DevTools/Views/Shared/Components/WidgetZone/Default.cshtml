@@ -1,19 +1,67 @@
 ﻿@using Smartstore.Core.Widgets
 
 @{
+    // INFO: (mw) (dt) Please analyze all review commits carefully! Try to adopt best-practices, code style and conventions the next time.
+    // TODO: (mw) (dt) Offcanvas: Use smaller font-size for clickable items.
+    // TODO: (mw) (dt) Offcanvas: Use bg color for hover & active for clickable items.
+    
     if (ViewData["widgetzone"] is not IWidgetZone zone)
     {
         return;
+    }
+
+    // Check if the visibility cookie is set.
+    var visibilityCookie = Request.Cookies[".Smart.WZVisibility"];
+    var isVisible = visibilityCookie != "hidden";
+
+    if (zone.Name == "start")
+    {
+        // Add the offcanvas zone preview menu
+        <a id="wz-menu-toggle" class="position-fixed top-0 end-0 m-2 mt-6 btn btn-dark" href="#" data-toggle="offcanvas"
+           data-autohide="true" data-blocker="false" data-placement="end" data-fullscreen="false" data-slide="false" data-target="#wz-menu">
+            <i class="far fa-layer-group"></i>
+        </a>
+        <aside id="wz-menu" class="offcanvas offcanvas-end offcanvas-shadow">
+            <div class="offcanvas-content bg-dark d-flex flex-column">
+                <div class="wz-zone-list flex-grow-1 overflow-scroll p-3 pt-0 pr-1 custom-scrollbar custom-scrollbar-invert"></div>
+
+                <div class="p-3 bg-dark">
+                    <div id="wz-toolbar" class="btn-group w-100 rounded-1" role="group" aria-label="@T("Plugins.Developer.DevTools.WidgetZoneMenu.Toolbar")">
+                        <a class="wz-toggle btn btn-outline-primary btn-icon" href="#" rel="nofollow" title="" data-toggle="tooltip" data-placement="top" data-original-title="@Html.Raw(T("Plugins.Developer.DevTools.WidgetZoneMenu.Toggle"))">
+                            <i class="far fa-eye@(isVisible ? "-slash" : "")"></i>
+                        </a>
+                        <a class="wz-toggle btn btn-outline-primary btn-icon" data-persistent="true" href="#" rel="nofollow" title="" data-toggle="tooltip" data-placement="top" data-original-title="@T("Plugins.Developer.DevTools.WidgetZoneMenu.PersistentToggle")">
+                            <i class="far fa-floppy-disk"></i>
+                        </a>
+                        <a class="wz-sidebar-close btn btn-outline-primary btn-icon" href="#" rel="nofollow" title="" data-toggle="tooltip" data-placement="top" data-original-title="@T("Plugins.Developer.DevTools.WidgetZoneMenu.CloseButton")">
+                            <i class="fa fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+
+                @*<div id="wz-toolbar" class="d-flex" role="group" aria-label="@T("Plugins.Developer.DevTools.WidgetZoneMenu.Toolbar")">
+                    <a class="wz-toggle" href="#" rel="nofollow" title="" data-toggle="tooltip" data-placement="top" data-original-title="@Html.Raw(T("Plugins.Developer.DevTools.WidgetZoneMenu.Toggle"))">
+                        <i class="far fa-eye@(isVisible ? "-slash" : "")"></i>
+                    </a>
+                    <a class="wz-toggle" data-persistent="true" href="#" rel="nofollow" title="" data-toggle="tooltip" data-placement="top" data-original-title="@T("Plugins.Developer.DevTools.WidgetZoneMenu.PersistentToggle")">
+                        <i class="far fa-eye@(isVisible ? "-slash" : "")"></i>
+                    </a>
+                    <a class="wz-sidebar-close" href="#" rel="nofollow" title="" data-toggle="tooltip" data-placement="top" data-original-title="@T("Plugins.Developer.DevTools.WidgetZoneMenu.CloseButton")">
+                        <i class="fa fa-times"></i>
+                    </a>
+                </div>*@
+            </div>
+        </aside>
     }
 }
 
 @if (zone.PreviewTagName == "meta")
 {
-    <meta name="widget-zone-name" class="wz-preview" content="@zone.Name" />
+    <meta name="widget-zone-name" class="wz-preview" attr-class='(!isVisible, "d-none")' content="@zone.Name" />
 }
 else
 {
-    <span sm-tagname="@zone.PreviewTagName" class="wz-preview badge badge-primary badge-subtle badge-ring text-truncate" title="@zone.Name"
+    <span sm-tagname="@zone.PreviewTagName" class="wz-preview badge badge-primary badge-subtle badge-ring text-truncate@(!isVisible ? " d-none" : "")" title="@zone.Name"
           attr-class='(zone.PreviewCssClass.HasValue(), zone.PreviewCssClass)'
           attr-style='(zone.PreviewCssStyle.HasValue(), zone.PreviewCssStyle)'>
         <span class="text-truncate">@zone.Name</span>
@@ -23,3 +71,66 @@ else
         </a>*@
     </span>
 }
+
+<script sm-if='zone.Name == "end"' type="module">
+    @{
+        var translationKeys = new[]
+        {
+            "Common.CopyToClipboard"
+        };
+    }
+
+    import { DevTools } from "@(Url.Content("~/Modules/Smartstore.DevTools/js/smartstore.devtools.js"))";
+
+    // Add widget zone group containers.
+    let groups = @Html.Raw(Json.Serialize(ViewBag.WidgetZoneGroups));
+
+    // Add a meta and default group for user-defined zones.
+    groups.unshift({
+        name: 'Meta',
+        zones: [],
+    });
+    groups.push({
+        name: @T("Admin.WidgetZones.UserDefined").JsValue,
+        zones: []
+    });
+
+    $(function () {
+        const zoneList = document.querySelector('.wz-zone-list');
+
+        // Add div's to '#wz-menu .wz-zone-list' for each element in groups.
+        groups.forEach(group => {
+            let groupContainer = $(`<div class="wz-zone-group d-flex flex-column mt-2 d-none" data-group="${group.name}"><h6 class="text-white my-2">${group.name}</h6></div>`);
+            groupContainer.data('groups', group.zones.join(' '))
+            $(zoneList).append(groupContainer);
+        });
+
+        const devTools = new DevTools();
+        devTools.initialize();
+
+        // Add translations
+        devTools.Res = {
+            @foreach (var key in translationKeys)
+            {
+                <text>"@(Html.Raw(key))": @(T(key).JsValue), </text>
+            }
+        };
+
+        const zones = $('.wz-preview');
+        zones.each(function() {
+            const el = $(this);
+            if (el.is('meta')) {
+                devTools.registerWidgetZone({
+                    name: el.attr('content'),
+                    previewTagName: 'meta'
+                });
+            }
+            else {
+                devTools.registerWidgetZone({
+                    name: el.attr('title'),
+                    previewTagName: el[0].tagName.toLowerCase()
+                });
+            }
+        });
+    });
+</script>

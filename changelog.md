@@ -24,6 +24,7 @@
 - **Grouped product enhancements**
   - Optional presentation of associated products as collapsible/expandable panels.
   - Added paging for associated products.
+- **MailChimp** plugin (commercial)
 - **Pixlr image editing** plugin (commercial)
   - Create and edit images directly in the Media Manager.
 - Updated to **.NET 8**
@@ -82,7 +83,8 @@
   - Export *out of stock* if inventory management and the buy button are deactivated.
 - #912 Add a setting to use the `CultureInfo.NativeName` in language selector instead of the language name maintained in backend.
 - #968 Allow to specify a language in which the notification is to be sent for manually created gift cards.
-- #1115 Use atomic transaction in PlaceOrder (save all or nothing)
+- #1115 Use atomic transaction in PlaceOrder (save all or nothing).
+- #1158 Natural sorting for product attributes.
 - Added meta properties name and uploadDate for videos
 - (DEV) Database migrations: Long running data seeders can now be run during the request stage to overcome app startup timeout issues.
 - #965 Prevent adding of products to the shopping cart by system customers such as *builtin@search-engine-record.com*.
@@ -98,6 +100,7 @@
 - Identity: Moved `ClientIdent` and `LastViditedPage` from `GenericAttribute` to `Customer` table (for performance reasons and to distress GenericAttribute table)
 - Enable tokens (e.g. current date and time) for email subject in email export deployments.
 - PostFinance: added an order note with the selected payment method.
+- Customer import: providing a last name in an address should not be mandatory.
 
 ### Bugfixes
 
@@ -172,6 +175,7 @@
 - Files from subfolders must not be attached to an e-mail when deploying an export (can be thousands).
 - #1136 Datagrid Vue component throws when expanding child grid.
 - #1125 Buttons for payment methods that are restricted by cart rule to the subtotal amount are not shown/hidden when the item quantity is updated on the cart page.
+- Delete media tracks of variant values of permanent deleted products.
 
 
 ## Smartstore 5.1.0

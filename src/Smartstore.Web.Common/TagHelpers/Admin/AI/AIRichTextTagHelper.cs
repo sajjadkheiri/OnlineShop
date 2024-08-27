@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Smartstore.Web.Rendering;
 
 namespace Smartstore.Web.TagHelpers.Admin
 {
@@ -8,15 +7,13 @@ namespace Smartstore.Web.TagHelpers.Admin
     /// Renders a button or dropdown (depending on the number of active AI providers) to open a dialog for HTML rich text creation.
     /// </summary>
     [HtmlTargetElement("ai-rich-text", Attributes = ForAttributeName, TagStructure = TagStructure.NormalOrSelfClosing)]
-    public class AIRichTextTagHelper(AIToolHtmlGenerator aiToolHtmlGenerator) : AITagHelperBase()
+    public class AIRichTextTagHelper() : AITagHelperBase()
     {
         // TODO: (mh) (ai) Bad naming. More specific please.
         const string DisplayAdditionalContentOptionsAttributeName = "display-additional-content-options";
         const string DisplayLinkOptionsAttributeName = "display-link-options";
         const string DisplayStructureOptionsAttributeName = "display-structure-options";
         const string DisplayImageOptionsAttributeName = "display-image-options";
-
-        private readonly AIToolHtmlGenerator _aiToolHtmlGenerator = aiToolHtmlGenerator;
 
         /// <summary>
         /// Defines whether the additional content options should be displayed in the rich text creation dialog.
@@ -48,7 +45,7 @@ namespace Smartstore.Web.TagHelpers.Admin
             output.TagName = null;
 
             var attributes = GetTagHelperAttributes();
-            var tool = _aiToolHtmlGenerator.GenerateRichTextTool(attributes);
+            var tool = AIToolHtmlGenerator.GenerateRichTextTool(attributes);
             if (tool == null)
             {
                 return;

@@ -1,46 +1,65 @@
-﻿using Smartstore.Engine.Modularity;
+﻿#nullable enable
+
+using Smartstore.Core.Platform.AI.Prompting;
+using Smartstore.Engine.Modularity;
 using Smartstore.Http;
 
 namespace Smartstore.Core.Platform.AI
 {
+    /// <summary>
+    /// Represents an AI provider like ChatGPT.
+    /// </summary>
     public partial interface IAIProvider : IProvider
     {
-        // TODO: (mh) (ai) Bad API design. Make the enum the core "support" method. TBD with MC.
+        /// <summary>
+        /// Gets a value indicating whether the provider is active.
+        /// </summary>
+        bool IsActive();
 
         /// <summary>
-        /// Defines whether the provider can create text.
+        /// Gets a value indicating whether the provider supports the given <paramref name="feature"/>.
         /// </summary>
-        bool SupportsTextCreation { get; }
+        bool Supports(AIProviderFeatures feature);
 
         /// <summary>
-        /// Defines whether the provider can translate text.
+        /// Gets <see cref="RouteInfo"/> for the given <paramref name="modalDialogType"/>.
         /// </summary>
-        bool SupportsTextTranslation { get; }
-
-        /// <summary>
-        /// Defines whether the provider can create images.
-        /// </summary>
-        bool SupportsImageCreation { get; }
-
-        /// <summary>
-        /// Defines whether the provider can analyse images.
-        /// </summary>
-        bool SupportsImageAnalysis { get; }
-
-        /// <summary>
-        /// Defines whether the provider can create theme vars.
-        /// </summary>
-        bool SuportsThemeVarCreation { get; }
-
-        /// <summary>
-        /// Defines whether the provider provides an assistent.
-        /// </summary>
-        bool SupportsAssistence { get; }
-
-        /// <summary>
-        /// Gets a route for the given modal dialog type.
-        /// </summary>
-        /// <returns>RouteInfo for the modal dialog.</returns>
         RouteInfo GetDialogRoute(AIDialogType modalDialogType);
+
+        /// <summary>
+        /// Gets the answer for the given <paramref name="prompt"/>.
+        /// </summary>
+        /// <param name="prompt">The AI prompt. It contains all the descriptions and instructions for the AI system to generate an appropriate response.</param>
+        /// <exception cref="AIException"></exception>
+        Task<string> ChatAsync(string prompt, CancellationToken cancelToken = default);
+
+        /// <summary>
+        /// Gets the answer stream for the given <paramref name="prompt"/>.
+        /// </summary>
+        /// <param name="prompt">The AI prompt. It contains all the descriptions and instructions for the AI system to generate an appropriate response.</param>
+        /// <exception cref="AIException"></exception>
+        IAsyncEnumerable<string> ChatAsStreamAsync(string prompt, CancellationToken cancelToken = default);
+
+        /// <summary>
+        /// Get the URL(s) of AI generated image(s).
+        /// </summary>
+        /// <param name="prompt">
+        /// The AI prompt. It contains all the descriptions and instructions for the AI system to generate an appropriate response.
+        /// It also contains additional instructions for image creation.
+        /// </param>
+        /// <param name="numImages">
+        /// The number of images to be generated. Please note that many AI systems such as ChatGPT only generate one image per request.
+        /// </param>
+        /// <returns>The URL(s) of the generated image(s).</returns>
+        /// <exception cref="AIException"></exception>
+        Task<string[]?> CreateImagesAsync(IImageGenerationPrompt prompt, int numImages = 1, CancellationToken cancelToken = default);
+
+        /// <summary>
+        /// Analyzes an image based on an AI prompt.
+        /// </summary>
+        /// <param name="url">The image URL.</param>
+        /// <param name="prompt">The AI prompt. It contains all the descriptions and instructions for the AI system to generate an appropriate response.</param>
+        /// <exception cref="AIException"></exception>
+        Task<string> AnalyzeImageAsync(string url, string prompt, CancellationToken cancelToken = default);
     }
 }

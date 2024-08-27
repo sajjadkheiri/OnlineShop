@@ -11,8 +11,8 @@
 <p align="center">
     A modular, scalable and ultra-fast open-source all-in-one eCommerce platform built on ASP.NET Core 7.
 </p>
-<p align="center"> 
-	<a href="#try-it-online">Try Online.</a> ∙ 
+<p align="center">
+	<a href="#try-it-online">Try Online</a> ∙ 
 	<a href="http://community.smartstore.com">Forum</a> ∙ 
 	<a href="http://community.smartstore.com/marketplace">Marketplace</a> ∙ 
 	<a href="http://translate.smartstore.com/">Translations</a>

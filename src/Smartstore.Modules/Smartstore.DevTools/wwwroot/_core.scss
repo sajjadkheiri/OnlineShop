@@ -9,6 +9,7 @@
     margin-block: 3px;
     text-align: start;
     box-shadow: none !important;
+    transition: 1s;
 
     > .btn-clipboard {
         position: absolute;
@@ -21,4 +22,36 @@
     &:hover > .btn-clipboard {
         opacity: 1;
     }
+
+    @keyframes pulse-highlight {
+        0% {
+            background-color: var(--badge-bg);
+        }
+
+        50% {
+            background-color: darkblue;
+        }
+
+        100% {
+            background-color: var(--badge-bg);
+        }
+    }
+
+    &.wz-highlight {
+        animation: pulse-highlight 0.5s ease-in-out 3;
+        // Overwrite .d-none
+        display: flex !important;
+    }
+}
+
+.wz-zone-pointer {
+    color: lightskyblue;
+    font-size: 0.8rem;
+
+    &:hover {
+        color: white;
+    }
+}
+.copy-to-clipboard.text-secondary:hover {
+    color: white !important;
 }

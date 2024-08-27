@@ -35,6 +35,7 @@ using Smartstore.Utilities.Html;
 using Smartstore.Web.Models.Common;
 using Smartstore.Web.Models.DataGrid;
 using Smartstore.Web.Rendering;
+using Smartstore.Web.Rendering.Choices;
 
 namespace Smartstore.Admin.Controllers
 {
@@ -1025,7 +1026,8 @@ namespace Smartstore.Admin.Controllers
             await _orderProcessingService.UpdateOrderDetailsAsync(orderItem, context);
 
             Services.ActivityLogger.LogActivity(KnownActivityLogTypes.EditOrder, T("ActivityLog.EditOrder"), orderItem.Order.GetOrderNumber());
-            TempData[UpdateOrderDetailsContext.InfoKey] = context.ToString(Services.Localization);
+
+            TempData[UpdateOrderDetailsContext.InfoKey] = await InvokePartialViewAsync("OrderItemUpdateInfo", context);
 
             return RedirectToAction(nameof(Edit), new { id = orderItem.OrderId });
         }
@@ -1069,7 +1071,8 @@ namespace Smartstore.Admin.Controllers
             await _db.SaveChangesAsync();
 
             Services.ActivityLogger.LogActivity(KnownActivityLogTypes.EditOrder, T("ActivityLog.EditOrder"), orderNumber);
-            TempData[UpdateOrderDetailsContext.InfoKey] = context.ToString(Services.Localization);
+
+            TempData[UpdateOrderDetailsContext.InfoKey] = await InvokePartialViewAsync("OrderItemUpdateInfo", context);
 
             return RedirectToAction(nameof(Edit), new { id = orderId });
         }
@@ -1649,7 +1652,7 @@ namespace Smartstore.Admin.Controllers
 
                 await _orderProcessingService.UpdateOrderDetailsAsync(orderItem, context);
 
-                TempData[UpdateOrderDetailsContext.InfoKey] = context.ToString(Services.Localization);
+                TempData[UpdateOrderDetailsContext.InfoKey] = await InvokePartialViewAsync("OrderItemUpdateInfo", context);
             }
 
             Services.ActivityLogger.LogActivity(KnownActivityLogTypes.EditOrder, T("ActivityLog.EditOrder"), order.GetOrderNumber());
@@ -2054,7 +2057,7 @@ namespace Smartstore.Admin.Controllers
                 .Where(x => x.ValueType == ProductVariantAttributeValueType.ProductLinkage && x.LinkedProductId != 0)
                 .ToDistinctArray(x => x.LinkedProductId);
 
-            if (linkedProductIds.Any())
+            if (linkedProductIds.Length > 0)
             {
                 linkedProducts = await _db.Products
                     .AsNoTracking()
@@ -2064,10 +2067,6 @@ namespace Smartstore.Admin.Controllers
 
             foreach (var attribute in attributes)
             {
-                var attributeValues = attribute.IsListTypeAttribute()
-                    ? attribute.ProductVariantAttributeValues.OrderBy(x => x.DisplayOrder).ToList()
-                    : new List<ProductVariantAttributeValue>();
-
                 var attributeModel = new AddOrderProductModel.ProductVariantAttributeModel
                 {
                     Id = attribute.Id,
@@ -2086,26 +2085,34 @@ namespace Smartstore.Admin.Controllers
 
                 if (attribute.IsListTypeAttribute())
                 {
-                    foreach (var value in attributeValues)
-                    {
-                        var valueModel = new AddOrderProductModel.ProductVariantAttributeValueModel
+                    var valueModels = await attribute.ProductVariantAttributeValues
+                        .SelectAwait(async x =>
                         {
-                            Id = value.Id,
-                            PriceAdjustment = string.Empty,
-                            Name = value.GetLocalized(x => x.Name),
-                            Alias = value.Alias,
-                            Color = value.Color,
-                            IsPreSelected = value.IsPreSelected
-                        };
+                            var m = new AddOrderProductModel.ProductVariantAttributeValueModel
+                            {
+                                Id = x.Id,
+                                PriceAdjustment = string.Empty,
+                                Name = x.GetLocalized(x => x.Name),
+                                Alias = x.Alias,
+                                Color = x.Color,
+                                IsPreSelected = x.IsPreSelected,
+                                DisplayOrder = x.DisplayOrder
+                            };
 
-                        if (value.ValueType == ProductVariantAttributeValueType.ProductLinkage &&
-                            linkedProducts.TryGetValue(value.LinkedProductId, out var linkedProduct))
-                        {
-                            valueModel.SeName = await linkedProduct.GetActiveSlugAsync();
-                        }
+                            if (x.ValueType == ProductVariantAttributeValueType.ProductLinkage &&
+                                linkedProducts.TryGetValue(x.LinkedProductId, out var linkedProduct))
+                            {
+                                m.SeName = await linkedProduct.GetActiveSlugAsync();
+                            }
 
-                        attributeModel.Values.Add(valueModel);
-                    }
+                            return m;
+                        })
+                        .ToListAsync();
+
+                    attributeModel.Values = [.. valueModels
+                        .Select(x => (ChoiceItemModel)x)
+                        .OrderBy(x => x.DisplayOrder)
+                        .ThenNaturalBy(x => x.Name)];
                 }
 
                 model.ProductVariantAttributes.Add(attributeModel);
@@ -2121,7 +2128,7 @@ namespace Smartstore.Admin.Controllers
             var giftCardIdsMap = new Multimap<int, int>();
             var orderItemIds = order.OrderItems.Select(x => x.Id).ToArray();
 
-            if (orderItemIds.Any())
+            if (orderItemIds.Length > 0)
             {
                 var returnRequests = await _db.ReturnRequests
                     .AsNoTracking()
